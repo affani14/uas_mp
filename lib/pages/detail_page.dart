@@ -34,30 +34,26 @@ class DetailPage extends StatelessWidget {
               ),
               SizedBox(height: 16),
 
-
               Text(
                 bookTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               SizedBox(height: 8),
 
-              // Penulis
               Text(
                 'Penulis: $author',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               SizedBox(height: 16),
 
-              // Deskripsi Buku
               Text(
                 'Deskripsi: $bookDescription',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               SizedBox(height: 20),
 
-              // Tombol Baca PDF
-              Container(
-                color: Colors.red[50],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(

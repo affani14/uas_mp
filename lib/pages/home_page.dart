@@ -13,14 +13,12 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('E-Book Reader'),
         actions: [
-
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
               showSearch(context: context, delegate: BookSearchDelegate());
             },
           ),
-
           Switch(
             value: isDarkMode,
             onChanged: onThemeChanged,
@@ -50,7 +48,8 @@ class HomePage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => BookDetailPage(bookIndex: index + 1),
+                          builder: (context) =>
+                              BookDetailPage(bookIndex: index + 1),
                         ),
                       );
                     },
@@ -58,10 +57,49 @@ class HomePage extends StatelessWidget {
                 },
               ),
             ),
+            SizedBox(height: 32),
+            Text(
+              'Daftar Buku EPUB',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.book),
+                    title: Text('Buku EPUB 1'),
+                    subtitle: Text('Deskripsi singkat buku EPUB 1'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EpubViewerPage(epubAssetPath: 'assets/epub/book1.epub'),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.book),
+                    title: Text('Buku EPUB 2'),
+                    subtitle: Text('Deskripsi singkat buku EPUB 2'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EpubViewerPage(epubAssetPath: 'assets/epub/book2.epub'),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
 
@@ -105,11 +143,13 @@ class BookSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+
+    List<String> suggestions = List.generate(5, (index) => 'Saran Buku ${index + 1} untuk "$query"');
     return ListView.builder(
-      itemCount: 5,
+      itemCount: suggestions.length,
       itemBuilder: (context, index) {
         return ListTile(
-          title: Text('Saran Buku ${index + 1} untuk "$query"'),
+          title: Text(suggestions[index]),
           onTap: () {
 
           },
@@ -119,7 +159,7 @@ class BookSearchDelegate extends SearchDelegate {
   }
 }
 
-
+// Halaman Detail Buku
 class BookDetailPage extends StatelessWidget {
   final int bookIndex;
 
@@ -137,4 +177,3 @@ class BookDetailPage extends StatelessWidget {
     );
   }
 }
-
