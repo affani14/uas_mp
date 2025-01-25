@@ -19,42 +19,48 @@ class _HomePageState extends State<HomePage> {
   bool _isUploading = false;
   String _uploadStatus = "";
 
+  Future<void> pickAndUploadFiles() async {
 
-  Future<void> pickAndUploadFile() async {
-
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
 
     if (result != null) {
-      File file = File(result.files.single.path!);
 
-
-      String localDir = (await getTemporaryDirectory()).path;
-      String localFilePath = '$localDir/${result.files.single.name}';
-      await file.copy(localFilePath);
-
+      List<File> files = result.paths.map((path) => File(path!)).toList();
 
       setState(() {
         _isUploading = true;
-        _uploadStatus = 'Mengunggah ${result.files.single.name}...';
+        _uploadStatus = 'Mengunggah ${files.length} file...';
       });
+
+      List<UploadTask> uploadTasks = [];
 
 
       try {
-        Reference ref = FirebaseStorage.instance.ref().child('uploads/${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name}');
-        UploadTask uploadTask = ref.putFile(file);
-        uploadTask.snapshotEvents.listen((event) {
-          double progress = (event.bytesTransferred.toDouble() / event.totalBytes.toDouble()) * 100;
-          setState(() {
-            _uploadStatus = 'Proses: ${progress.toStringAsFixed(2)}%';
-          });
-        });
+        for (var file in files) {
+          String localDir = (await getTemporaryDirectory()).path;
+          String localFilePath = '$localDir/${result.files.firstWhere((element) => element.path == file.path).name}';
+          await file.copy(localFilePath);
+
+          Reference ref = FirebaseStorage.instance.ref().child('uploads/${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}');
+          UploadTask uploadTask = ref.putFile(file);
+
+          uploadTasks.add(uploadTask);
 
 
-        await uploadTask.whenComplete(() {
-          setState(() {
-            _isUploading = false;
-            _uploadStatus = 'Pengunggahan selesai!';
+          uploadTask.snapshotEvents.listen((event) {
+            double progress = (event.bytesTransferred.toDouble() / event.totalBytes.toDouble()) * 100;
+            setState(() {
+              _uploadStatus = 'Proses: ${progress.toStringAsFixed(2)}%';
+            });
           });
+        }
+
+
+        await Future.wait(uploadTasks);
+
+        setState(() {
+          _isUploading = false;
+          _uploadStatus = 'Pengunggahan selesai!';
         });
       } catch (e) {
         setState(() {
@@ -64,6 +70,8 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +168,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          pickAndUploadFile();
+          pickAndUploadFiles();
         },
         child: Icon(Icons.upload),
         tooltip: 'Unggah Buku',
