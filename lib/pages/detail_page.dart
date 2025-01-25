@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pdf_viewer_page.dart';
 
 class DetailPage extends StatelessWidget {
   final int bookId;
@@ -12,7 +13,26 @@ class DetailPage extends StatelessWidget {
         title: Text('Detail Buku $bookId'),
       ),
       body: Center(
-        child: Text('Informasi detail untuk Buku $bookId'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Informasi detail untuk Buku $bookId'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+
+                String pdfPath = 'assets/pdf/book$bookId.pdf';
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PdfViewerPage(pdfPath: pdfPath),
+                  ),
+                );
+              },
+              child: Text('Baca PDF'),
+            ),
+          ],
+        ),
       ),
     );
   }
