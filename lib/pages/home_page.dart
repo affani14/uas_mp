@@ -1,18 +1,30 @@
 import 'package:flutter/material.dart';
+import 'epub_viewer_page.dart';
 
 class HomePage extends StatelessWidget {
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  HomePage({required this.isDarkMode, required this.onThemeChanged});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('E-Book Reader'),
         actions: [
+
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-
               showSearch(context: context, delegate: BookSearchDelegate());
             },
+          ),
+
+          Switch(
+            value: isDarkMode,
+            onChanged: onThemeChanged,
+            activeColor: Colors.white,
           ),
         ],
       ),
@@ -35,7 +47,6 @@ class HomePage extends StatelessWidget {
                     title: Text('Buku ${index + 1}'),
                     subtitle: Text('Deskripsi singkat buku ${index + 1}'),
                     onTap: () {
-
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -50,6 +61,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
 
@@ -94,7 +106,7 @@ class BookSearchDelegate extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     return ListView.builder(
-      itemCount: 5, // Ganti dengan jumlah hasil pencarian
+      itemCount: 5,
       itemBuilder: (context, index) {
         return ListTile(
           title: Text('Saran Buku ${index + 1} untuk "$query"'),
@@ -106,6 +118,7 @@ class BookSearchDelegate extends SearchDelegate {
     );
   }
 }
+
 
 class BookDetailPage extends StatelessWidget {
   final int bookIndex;
@@ -124,3 +137,4 @@ class BookDetailPage extends StatelessWidget {
     );
   }
 }
+
