@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path_provider/path_provider.dart';
 
+
 class BookController extends GetxController {
   var isDarkMode = false.obs;
   var isUploading = false.obs;
@@ -42,7 +43,7 @@ class BookController extends GetxController {
       for (var file in files) {
         // Menyimpan file secara lokal di direktori sementara
         String localDir = (await getTemporaryDirectory()).path;
-        String localFilePath = '$localDir/${result.files.firstWhere((element) => element.path == file.path).name}';
+        String localFilePath = '$localDir/${file.uri.pathSegments.last}'; // Sesuaikan penamaan file
         await file.copy(localFilePath);
 
         // Mendapatkan referensi file di Firebase Storage

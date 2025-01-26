@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'book_controller.dart';
+import '../controllers/book_controller.dart';
 import 'detail_page.dart';
 import 'epub_viewer_page.dart';
 import '../controllers/theme_controller.dart';
+import '../widgets/file_preview_widget.dart';
+import '../widgets/upload_progress_widget.dart';
 
 class HomePage extends StatelessWidget {
-
   final BookController bookController = Get.put(BookController());
   final ThemeController themeController = Get.find();
 
@@ -16,14 +17,12 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text('E-Book Reader'),
         actions: [
-
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
               showSearch(context: context, delegate: BookSearchDelegate());
             },
           ),
-
           Obx(() => Switch(
             value: themeController.isDarkMode.value,
             onChanged: (value) {
@@ -38,7 +37,6 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Text(
               'Daftar Buku',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -66,7 +64,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 32),
-            // Daftar Buku EPUB
             Text(
               'Daftar Buku EPUB',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -106,51 +103,14 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            // Status upload
-            Obx(() {
-              return bookController.isUploading.value
-                  ? Column(
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 8),
-                  Text(bookController.uploadStatus.value),
-                ],
-              )
-                  : SizedBox();
-            }),
+
+            UploadProgressWidget(),
             SizedBox(height: 16),
 
-            Obx(() {
-              if (bookController.filesToUpload.isNotEmpty) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'File yang Dipilih:',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    SizedBox(height: 8),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: bookController.filesToUpload.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: Icon(Icons.file_present),
-                          title: Text(bookController.filesToUpload[index].path.split('/').last),
-                          subtitle: Text(bookController.previewUrls[index]),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              } else {
-                return SizedBox();
-              }
-            }),
+            FilePreviewWidget(),
           ],
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: bookController.pickAndUploadFiles,
         child: Icon(Icons.upload),
@@ -202,7 +162,7 @@ class BookSearchDelegate extends SearchDelegate {
         return ListTile(
           title: Text(suggestions[index]),
           onTap: () {
-
+            // Implement action for suggestion click
           },
         );
       },
