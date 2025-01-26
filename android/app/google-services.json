@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1047152759080",
+    "project_id": "uasmp-2d013",
+    "storage_bucket": "uasmp-2d013.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1047152759080:android:d4843edb0be2185bbf401d",
+        "android_client_info": {
+          "package_name": "com.example.uas_mp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvbCUp8aj4VbW851RG-b84ekxg4mouk6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
