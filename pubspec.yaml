@@ -19,6 +19,8 @@ dependencies:
   firebase_core: ^3.10.1
   firebase_auth: ^5.4.1
   cloud_firestore: ^5.6.2
+  image: ^4.5.2
+  shared_preferences: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -37,3 +39,4 @@ flutter:
     - assets/epub/book1.epub
     - assets/epub/book2.epub
     - assets/epub/book3.epub
+    - assets/watermark.png
