@@ -96,6 +96,7 @@ Tap on any EPUB book listed in the Home page to open it in the EPUB viewer.
 Changing the Theme:
 
 The theme can be switched between light and dark mode via the toggle in the app bar.
+
 4. Installation Guide
 Prerequisites:
 Ensure that you have Flutter installed on your system.
@@ -106,8 +107,8 @@ Clone the Repository:
 bash
 Copy
 Edit
-git clone https://github.com/your-repository/e-book-reader.git
-Install Dependencies: Navigate to the project directory and run:
+  git clone https://github.com/your-repository/e-book-reader.git
+  Install Dependencies: Navigate to the project directory and run:
 
 bash
 Copy
