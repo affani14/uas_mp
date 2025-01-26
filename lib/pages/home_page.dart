@@ -1,74 +1,14 @@
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:get/get.dart';
+import 'book_controller.dart';
+import 'detail_page.dart';
 import 'epub_viewer_page.dart';
+import '../controllers/theme_controller.dart';
 
-class HomePage extends StatefulWidget {
-  final bool isDarkMode;
-  final ValueChanged<bool> onThemeChanged;
+class HomePage extends StatelessWidget {
 
-  HomePage({required this.isDarkMode, required this.onThemeChanged});
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  bool _isUploading = false;
-  String _uploadStatus = "";
-  List<File> _filesToUpload = [];
-  List<String> _previewUrls = [];
-
-  Future<void> pickAndUploadFiles() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
-
-    if (result != null) {
-      List<File> files = result.paths.map((path) => File(path!)).toList();
-
-      setState(() {
-        _isUploading = true;
-        _uploadStatus = 'Mengunggah ${files.length} file...';
-        _filesToUpload = files;
-        _previewUrls = files.map((file) => file.path).toList();
-      });
-
-      List<UploadTask> uploadTasks = [];
-
-      try {
-        for (var file in files) {
-          String localDir = (await getTemporaryDirectory()).path;
-          String localFilePath = '$localDir/${result.files.firstWhere((element) => element.path == file.path).name}';
-          await file.copy(localFilePath);
-
-          Reference ref = FirebaseStorage.instance.ref().child('uploads/${DateTime.now().millisecondsSinceEpoch}_${file.uri.pathSegments.last}');
-          UploadTask uploadTask = ref.putFile(file);
-
-          uploadTasks.add(uploadTask);
-
-          uploadTask.snapshotEvents.listen((event) {
-            double progress = (event.bytesTransferred.toDouble() / event.totalBytes.toDouble()) * 100;
-            setState(() {
-              _uploadStatus = 'Proses: ${progress.toStringAsFixed(2)}%';
-            });
-          });
-        }
-
-        await Future.wait(uploadTasks);
-
-        setState(() {
-          _isUploading = false;
-          _uploadStatus = 'Pengunggahan selesai!';
-        });
-      } catch (e) {
-        setState(() {
-          _isUploading = false;
-          _uploadStatus = 'Gagal mengunggah: $e';
-        });
-      }
-    }
-  }
+  final BookController bookController = Get.put(BookController());
+  final ThemeController themeController = Get.find();
 
   @override
   Widget build(BuildContext context) {
@@ -76,17 +16,21 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text('E-Book Reader'),
         actions: [
+
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
               showSearch(context: context, delegate: BookSearchDelegate());
             },
           ),
-          Switch(
-            value: widget.isDarkMode,
-            onChanged: widget.onThemeChanged,
+
+          Obx(() => Switch(
+            value: themeController.isDarkMode.value,
+            onChanged: (value) {
+              themeController.toggleTheme();
+            },
             activeColor: Colors.white,
-          ),
+          )),
         ],
       ),
       body: Padding(
@@ -94,6 +38,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             Text(
               'Daftar Buku',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -112,7 +57,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              BookDetailPage(bookIndex: index + 1),
+                              BookDetailPage(bookId: index + 1),
                         ),
                       );
                     },
@@ -121,6 +66,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 32),
+            // Daftar Buku EPUB
             Text(
               'Daftar Buku EPUB',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -160,39 +106,53 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
-            if (_isUploading)
-              Column(
+            // Status upload
+            Obx(() {
+              return bookController.isUploading.value
+                  ? Column(
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 8),
-                  Text(_uploadStatus),
+                  Text(bookController.uploadStatus.value),
                 ],
-              ),
+              )
+                  : SizedBox();
+            }),
             SizedBox(height: 16),
 
-            if (_filesToUpload.isNotEmpty)
-              Text('File yang Dipilih:', style: Theme.of(context).textTheme.headlineSmall),
-            if (_filesToUpload.isNotEmpty)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _filesToUpload.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: Icon(Icons.file_present),
-                      title: Text(_filesToUpload[index].path.split('/').last),
-                      subtitle: Text(_previewUrls[index]),
-                    );
-                  },
-                ),
-              ),
+            Obx(() {
+              if (bookController.filesToUpload.isNotEmpty) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'File yang Dipilih:',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    SizedBox(height: 8),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: bookController.filesToUpload.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: Icon(Icons.file_present),
+                          title: Text(bookController.filesToUpload[index].path.split('/').last),
+                          subtitle: Text(bookController.previewUrls[index]),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              } else {
+                return SizedBox();
+              }
+            }),
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          pickAndUploadFiles();
-        },
+        onPressed: bookController.pickAndUploadFiles,
         child: Icon(Icons.upload),
         tooltip: 'Unggah Buku',
       ),
@@ -232,7 +192,10 @@ class BookSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    List<String> suggestions = List.generate(5, (index) => 'Saran Buku ${index + 1} untuk "$query"');
+    List<String> suggestions = List.generate(
+      5,
+          (index) => 'Saran Buku ${index + 1} untuk "$query"',
+    );
     return ListView.builder(
       itemCount: suggestions.length,
       itemBuilder: (context, index) {
@@ -243,25 +206,6 @@ class BookSearchDelegate extends SearchDelegate {
           },
         );
       },
-    );
-  }
-}
-
-
-class BookDetailPage extends StatelessWidget {
-  final int bookIndex;
-
-  BookDetailPage({required this.bookIndex});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Detail Buku $bookIndex'),
-      ),
-      body: Center(
-        child: Text('Detail informasi untuk Buku $bookIndex'),
-      ),
     );
   }
 }
