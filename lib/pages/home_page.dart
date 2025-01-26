@@ -18,22 +18,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _isUploading = false;
   String _uploadStatus = "";
+  List<File> _filesToUpload = [];
+  List<String> _previewUrls = [];
 
   Future<void> pickAndUploadFiles() async {
-
     FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
 
     if (result != null) {
-
       List<File> files = result.paths.map((path) => File(path!)).toList();
 
       setState(() {
         _isUploading = true;
         _uploadStatus = 'Mengunggah ${files.length} file...';
+        _filesToUpload = files;
+        _previewUrls = files.map((file) => file.path).toList();
       });
 
       List<UploadTask> uploadTasks = [];
-
 
       try {
         for (var file in files) {
@@ -46,7 +47,6 @@ class _HomePageState extends State<HomePage> {
 
           uploadTasks.add(uploadTask);
 
-
           uploadTask.snapshotEvents.listen((event) {
             double progress = (event.bytesTransferred.toDouble() / event.totalBytes.toDouble()) * 100;
             setState(() {
@@ -54,7 +54,6 @@ class _HomePageState extends State<HomePage> {
             });
           });
         }
-
 
         await Future.wait(uploadTasks);
 
@@ -70,8 +69,6 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +160,32 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+
+            if (_isUploading)
+              Column(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 8),
+                  Text(_uploadStatus),
+                ],
+              ),
+            SizedBox(height: 16),
+
+            if (_filesToUpload.isNotEmpty)
+              Text('File yang Dipilih:', style: Theme.of(context).textTheme.headlineSmall),
+            if (_filesToUpload.isNotEmpty)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _filesToUpload.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: Icon(Icons.file_present),
+                      title: Text(_filesToUpload[index].path.split('/').last),
+                      subtitle: Text(_previewUrls[index]),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
@@ -224,7 +247,7 @@ class BookSearchDelegate extends SearchDelegate {
   }
 }
 
-// Halaman Detail Buku
+
 class BookDetailPage extends StatelessWidget {
   final int bookIndex;
 
